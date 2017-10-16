@@ -46,8 +46,8 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
     private static final String TAG = "ImageClassifierActivity";
 
     private ImagePreprocessor mImagePreprocessor;
-    private TextToSpeech mTtsEngine;
-    private TtsSpeaker mTtsSpeaker;
+    //private TextToSpeech mTtsEngine;
+    //private TtsSpeaker mTtsSpeaker;
     private CameraHandler mCameraHandler;
     private TensorFlowImageClassifier mTensorFlowClassifier;
 
@@ -105,9 +105,10 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         @Override
         public void run() {
             mImagePreprocessor = new ImagePreprocessor();
-
+/*
             mTtsSpeaker = new TtsSpeaker();
             mTtsSpeaker.setHasSenseOfHumor(true);
+
             mTtsEngine = new TextToSpeech(ImageClassifierActivity.this,
                     new TextToSpeech.OnInitListener() {
                         @Override
@@ -123,6 +124,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
                             }
                         }
                     });
+                    */
             mCameraHandler = CameraHandler.getInstance();
             mCameraHandler.initializeCamera(
                     ImageClassifierActivity.this, mBackgroundHandler,
@@ -137,9 +139,11 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
     private Runnable mBackgroundClickHandler = new Runnable() {
         @Override
         public void run() {
+            /*
             if (mTtsEngine != null) {
                 mTtsSpeaker.speakShutterSound(mTtsEngine);
             }
+            */
             mCameraHandler.takePicture();
         }
     };
@@ -204,14 +208,17 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         final List<Classifier.Recognition> results = mTensorFlowClassifier.doRecognize(bitmap);
 
         Log.d(TAG, "Got the following results from Tensorflow: " + results);
+        /*
         if (mTtsEngine != null) {
             // speak out loud the result of the image recognition
             mTtsSpeaker.speakResults(mTtsEngine, results);
         } else {
             // if theres no TTS, we don't need to wait until the utterance is spoken, so we set
             // to ready right away.
-            setReady(true);
+
         }
+        */
+        setReady(true);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -255,10 +262,12 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
             // close quietly
         }
 
+        /*
         if (mTtsEngine != null) {
             mTtsEngine.stop();
             mTtsEngine.shutdown();
         }
+        */
     }
 
 }
