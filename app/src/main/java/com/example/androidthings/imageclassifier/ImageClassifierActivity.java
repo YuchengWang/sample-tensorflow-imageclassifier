@@ -36,6 +36,7 @@ import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManagerService;
+import com.google.android.things.pio.Pwm;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,6 +61,10 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
     private AtomicBoolean mReady = new AtomicBoolean(false);
     private ButtonInputDriver mButtonDriver;
     private Gpio mReadyLED;
+
+    private static final String PWM_NAME = "PWM0";
+
+    private Pwm mPwm;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -98,6 +103,17 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         } catch (IOException e) {
             mButtonDriver = null;
             Log.w(TAG, "Could not open GPIO pins", e);
+        }
+        List<String> portList = pioService.getPwmList();
+        if (portList.isEmpty()) {
+            Log.i(TAG, "No PWM port available on this device.");
+        } else {
+            Log.i(TAG, "List of available ports: " + portList);
+            try {
+                mPwm = pioService.openPwm(PWM_NAME);
+            } catch (IOException e) {
+                Log.w(TAG, "Unable to access PWM", e);
+            }
         }
     }
 
@@ -187,6 +203,17 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         }
     }
 
+    public void initializePwm(Pwm pwm) throws IOException, InterruptedException {
+        pwm.setPwmFrequencyHz(120);
+        pwm.setPwmDutyCycle(25);
+
+        // Enable the PWM signal
+        pwm.setEnabled(true);
+        mBackgroundThread.sleep(5000);
+
+        pwm.setEnabled(false);
+    }
+
     @Override
     public void onImageAvailable(ImageReader reader) {
         final Bitmap bitmap;
@@ -207,9 +234,19 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         if (mTtsEngine != null) {
             // speak out loud the result of the image recognition
             mTtsSpeaker.speakResults(mTtsEngine, results);
+            if(results.get(0).getTitle().equals("Persian cat")){
+                Log.v(TAG, "get Persian cat ");
+                try {
+                    initializePwm(mPwm);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             // if theres no TTS, we don't need to wait until the utterance is spoken, so we set
-            // to ready right away.
+            // to ready right away.e
             setReady(true);
         }
 
@@ -238,6 +275,15 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         }
         mBackgroundThread = null;
         mBackgroundHandler = null;
+
+        if (mPwm != null) {
+            try {
+                mPwm.close();
+                mPwm = null;
+            } catch (IOException e) {
+                Log.w(TAG, "Unable to close PWM", e);
+            }
+        }
 
         try {
             if (mCameraHandler != null) mCameraHandler.shutDown();
