@@ -48,7 +48,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
     private ImagePreprocessor mImagePreprocessor;
     private TextToSpeech mTtsEngine;
     private TtsSpeaker mTtsSpeaker;
-    private CameraHandler mCameraHandler;
+    //add camera handler
     private TensorFlowImageClassifier mTensorFlowClassifier;
 
     private HandlerThread mBackgroundThread;
@@ -123,12 +123,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
                             }
                         }
                     });
-            mCameraHandler = CameraHandler.getInstance();
-            mCameraHandler.initializeCamera(
-                    ImageClassifierActivity.this, mBackgroundHandler,
-                    ImageClassifierActivity.this);
-
-            mTensorFlowClassifier = new TensorFlowImageClassifier(ImageClassifierActivity.this);
+           //add camerahandler
 
             setReady(true);
         }
@@ -140,7 +135,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
             if (mTtsEngine != null) {
                 mTtsSpeaker.speakShutterSound(mTtsEngine);
             }
-            mCameraHandler.takePicture();
+           //add camera handler
         }
     };
 
@@ -239,11 +234,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         mBackgroundThread = null;
         mBackgroundHandler = null;
 
-        try {
-            if (mCameraHandler != null) mCameraHandler.shutDown();
-        } catch (Throwable t) {
-            // close quietly
-        }
+        //add camera handler
         try {
             if (mTensorFlowClassifier != null) mTensorFlowClassifier.destroyClassifier();
         } catch (Throwable t) {
